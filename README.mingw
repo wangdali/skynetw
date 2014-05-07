@@ -1,0 +1,33 @@
+## 简介
+wangdali <wangdali@qq.com>
+
+    这个项目指在将云风的 Skynet 项目移植到 Windows系统中。
+
+## 进度
+目前已经编译共过的程序有：
+1、skynet.exe 主程序，由于socket_server未移植，此程序还无法使用网络。
+2、skynet的服务程序
+	a. master.so
+	b. harbor.so
+	c. gate.so
+	d. logger.so
+	e. snlua.so
+
+3、Lua 库
+	a. cjson.so
+	b. int64.so
+	c. md5.so
+	d. memory.so
+	e. mongo.so
+	f. multicast.so
+	g. netpack.so
+	h. skynet.so
+	i. socketdriver.so 由于网络模块未移植，此模块也无法使用。
+
+## 问题
+1、profile.so 时钟问题
+2、bson.so  网络Socket问题
+3、clientsocket.so 网络Socket问题
+
+## 计划
+	移植socket_server到windows下。

@@ -54,6 +54,7 @@ _try_open(struct modules *m, const char * name) {
 		dl = dlopen(tmp, RTLD_NOW | RTLD_GLOBAL);
 		path = l;
 	}while(dl == NULL);
+	printf("module path=%s\n",tmp);
 
 	if (dl == NULL) {
 		fprintf(stderr, "try open %s failed : %s\n",name,dlerror());

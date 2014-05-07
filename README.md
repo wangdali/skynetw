@@ -15,6 +15,9 @@ export PLAT=linux
 make
 ```
 
+## Build with mingw32
+make -f Makefile.mingw
+
 ## Test
 
 Run these in different console

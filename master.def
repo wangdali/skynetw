@@ -1,0 +1,7 @@
+{ 
+    global:
+	master_create;
+	master_init;
+	master_release;   
+    local: *;
+};

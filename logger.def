@@ -1,0 +1,7 @@
+{ 
+    global:
+	logger_create;
+	logger_init;
+	logger_release;   
+    local: *;
+};

@@ -2,11 +2,11 @@
 
 CC = i586-mingw32msvc-gcc
 CFLAGS = -g -Wall
-LDFLAGS = -lpthread -llua
+LDFLAGS = -lpthread lua52.dll
 SHARED = -shared
 
 all : \
-	skynet.a \
+	skynet.dll \
 	skynet.exe \
 	master.so \
 	harbor.so \
@@ -28,7 +28,7 @@ all : \
 #	bson.so \
 #	clientsocket.so \
 
-skynet.a : \
+skynet.dll : \
 	skynet-src/dlfcn.c \
 	skynet-src/malloc_hook.c \
 	skynet-src/skynet_env.c \
@@ -44,9 +44,7 @@ skynet.a : \
 	skynet-src/skynet_start.c \
 	skynet-src/socket_server.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src $(LDFLAGS) -DPTW32_STATIC_LIB -DNOUSE_JEMALLOC -march=i686
-	ar rcv $@ \
-            *.o
-	ranlib $@
+	$(CC) $(CFLAGS) $(SHARED) -o $@  *.o $(LDFLAGS)
 	rm *.o
 
 skynet.exe : \
@@ -54,48 +52,49 @@ skynet.exe : \
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src 
 	$(CC) $(CFLAGS) -o $@ \
 		skynet_main.o \
-		skynet.a \
-		-I./skynet-src $(LDFLAGS)
+		lua52.dll \
+		skynet.dll \
+		-I./skynet-src
 	rm *.o
 
 master.so : \
 	service-src/service_master.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
-		service_master.o skynet.a \
-		-I./skynet-src $(LDFLAGS)
+		service_master.o skynet.dll \
+		-I./skynet-src $(LDFLAGS) -Wl,--version-script=master.def
 	rm *.o
 
 harbor.so : \
 	service-src/service_harbor.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
-		service_harbor.o skynet.a \
-		-I./skynet-src $(LDFLAGS)
+		service_harbor.o skynet.dll \
+		-I./skynet-src $(LDFLAGS) -Wl,--version-script=harbor.def
 	rm *.o
 
 logger.so : \
 	service-src/service_logger.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
-		service_logger.o skynet.a \
-		-I./skynet-src $(LDFLAGS)
+		service_logger.o skynet.dll \
+		-I./skynet-src $(LDFLAGS) -Wl,--version-script=logger.def
 	rm *.o
 
 gate.so : \
 	service-src/service_gate.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
-		service_gate.o skynet.a \
-		-I./skynet-src $(LDFLAGS)
+		service_gate.o skynet.dll \
+		-I./skynet-src $(LDFLAGS) -Wl,--version-script=gate.def
 	rm *.o
 
 snlua.so : \
 	service-src/service_snlua.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
-		service_snlua.o skynet.a \
-		-I./skynet-src $(LDFLAGS)
+		service_snlua.o skynet.dll \
+		-I./skynet-src $(LDFLAGS) -Wl,--version-script=snlua.def
 	rm *.o
 
 #######################################################
@@ -105,7 +104,7 @@ skynet.so : \
 	lualib-src/lua-seri.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-skynet.o lua-seri.o skynet.a \
+		lua-skynet.o lua-seri.o skynet.dll lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -113,7 +112,7 @@ socketdriver.so : \
 	lualib-src/lua-socket.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-socket.o skynet.a \
+		lua-socket.o skynet.dll lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -121,7 +120,7 @@ netpack.so : \
 	lualib-src/lua-netpack.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-netpack.o skynet.a \
+		lua-netpack.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -129,7 +128,7 @@ profile.so : \
 	lualib-src/lua-profile.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-profile.o skynet.a \
+		lua-profile.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -137,7 +136,7 @@ memory.so : \
 	lualib-src/lua-memory.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-memory.o skynet.a \
+		lua-memory.o skynet.dll lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -145,7 +144,7 @@ mongo.so : \
 	lualib-src/lua-mongo.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-mongo.o skynet.a \
+		lua-mongo.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -153,7 +152,7 @@ bson.so : \
 	lualib-src/lua-bson.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-bson.o skynet.a \
+		lua-bson.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -161,7 +160,7 @@ clientsocket.so : \
 	lualib-src/lua-clientsocket.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-clientsocket.o skynet.a \
+		lua-clientsocket.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -169,7 +168,7 @@ multicast.so : \
 	lualib-src/lua-multicast.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src -march=i686
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-multicast.o skynet.a \
+		lua-multicast.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 #######################################################
@@ -178,7 +177,7 @@ int64.so : \
 	3rd/lua-int64/int64.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		int64.o skynet.a \
+		int64.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -188,7 +187,7 @@ md5.so : \
 	3rd/lua-md5/compat-5.2.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		md5.o md5lib.o compat-5.2.o skynet.a \
+		md5.o md5lib.o compat-5.2.o lua52.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -201,7 +200,7 @@ cjson.so : \
 		lua_cjson.o \
 		fpconv.o \
 		strbuf.o \
-		skynet.a \
+		lua52.dll \
 		-I./skynet-src -I./3rd/lua-cjson $(LDFLAGS)
 	rm *.o
 

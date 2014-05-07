@@ -1,0 +1,209 @@
+.PHONY : all install clean mk mod
+
+CC = i586-mingw32msvc-gcc
+CFLAGS = -g -Wall
+LDFLAGS = -lpthread -llua
+SHARED = -shared
+
+all : \
+	skynet.a \
+	skynet.exe \
+	master.so \
+	harbor.so \
+	logger.so \
+	gate.so \
+	snlua.so \
+	skynet.so \
+	socketdriver.so \
+	netpack.so \
+	memory.so \
+	mongo.so \
+	multicast.so \
+	int64.so \
+	md5.so \
+	cjson.so
+
+### 以下三个在 mingw32 下编译不通过
+#	profile.so \
+#	bson.so \
+#	clientsocket.so \
+
+skynet.a : \
+	skynet-src/dlfcn.c \
+	skynet-src/malloc_hook.c \
+	skynet-src/skynet_env.c \
+	skynet-src/skynet_error.c \
+	skynet-src/skynet_handle.c \
+	skynet-src/skynet_harbor.c \
+	skynet-src/skynet_module.c \
+	skynet-src/skynet_monitor.c \
+	skynet-src/skynet_mq.c \
+	skynet-src/skynet_server.c \
+	skynet-src/skynet_timer.c \
+	skynet-src/skynet_socket.c \
+	skynet-src/skynet_start.c \
+	skynet-src/socket_server.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src $(LDFLAGS) -DPTW32_STATIC_LIB -DNOUSE_JEMALLOC -march=i686
+	ar rcv $@ \
+            *.o
+	ranlib $@
+	rm *.o
+
+skynet.exe : \
+	skynet-src/skynet_main.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src 
+	$(CC) $(CFLAGS) -o $@ \
+		skynet_main.o \
+		skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+master.so : \
+	service-src/service_master.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
+		service_master.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+harbor.so : \
+	service-src/service_harbor.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
+		service_harbor.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+logger.so : \
+	service-src/service_logger.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
+		service_logger.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+gate.so : \
+	service-src/service_gate.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
+		service_gate.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+snlua.so : \
+	service-src/service_snlua.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o cservice/$@ \
+		service_snlua.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+#######################################################
+
+skynet.so : \
+	lualib-src/lua-skynet.c \
+	lualib-src/lua-seri.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-skynet.o lua-seri.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+socketdriver.so : \
+	lualib-src/lua-socket.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-socket.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+netpack.so : \
+	lualib-src/lua-netpack.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-netpack.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+profile.so : \
+	lualib-src/lua-profile.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-profile.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+memory.so : \
+	lualib-src/lua-memory.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-memory.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+mongo.so : \
+	lualib-src/lua-mongo.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-mongo.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+bson.so : \
+	lualib-src/lua-bson.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-bson.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+clientsocket.so : \
+	lualib-src/lua-clientsocket.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-clientsocket.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+multicast.so : \
+	lualib-src/lua-multicast.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src -march=i686
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua-multicast.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+#######################################################
+
+int64.so : \
+	3rd/lua-int64/int64.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		int64.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+md5.so : \
+	3rd/lua-md5/md5.c \
+	3rd/lua-md5/md5lib.c \
+	3rd/lua-md5/compat-5.2.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		md5.o md5lib.o compat-5.2.o skynet.a \
+		-I./skynet-src $(LDFLAGS)
+	rm *.o
+
+cjson.so : \
+	3rd/lua-cjson/lua_cjson.c \
+	3rd/lua-cjson/fpconv.c \
+	3rd/lua-cjson/strbuf.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src
+	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
+		lua_cjson.o \
+		fpconv.o \
+		strbuf.o \
+		skynet.a \
+		-I./skynet-src -I./3rd/lua-cjson $(LDFLAGS)
+	rm *.o
+
+clean :
+	rm *.o *.a cservice/*.so luaclib/*.so skynet.exe

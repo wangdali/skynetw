@@ -43,8 +43,9 @@ skynet.dll : \
 	skynet-src/skynet_socket.c \
 	skynet-src/skynet_start.c \
 	skynet-src/socket_server.c
-	$(CC) $(CFLAGS) -c $^ -I./skynet-src $(LDFLAGS) -DPTW32_STATIC_LIB -DNOUSE_JEMALLOC -march=i686
-	$(CC) $(CFLAGS) $(SHARED) -o $@  *.o $(LDFLAGS)
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src $(LDFLAGS) \
+	-DPTW32_STATIC_LIB -DNOUSE_JEMALLOC -march=i686
+	$(CC) $(CFLAGS) $(SHARED) -o $@ *.o $(LDFLAGS) libws2_32.a
 	rm *.o
 
 skynet.exe : \
@@ -54,7 +55,7 @@ skynet.exe : \
 		skynet_main.o \
 		lua52.dll \
 		skynet.dll \
-		-I./skynet-src
+		-I./skynet-src libws2_32.a
 	rm *.o
 
 master.so : \

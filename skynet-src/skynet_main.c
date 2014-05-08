@@ -11,7 +11,9 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
-#if !defined(__WIN32__)
+#if defined(__WIN32__)
+	#include <winsock2.h>
+#else
 	#include <signal.h>
 #endif
 static int
@@ -88,6 +90,17 @@ int sigign() {
 
 int
 main(int argc, char *argv[]) {
+#if defined(__WIN32__)
+	WSADATA WSAData;
+
+	if(WSAStartup(MAKEWORD(2, 2), &WSAData))//初始化
+	{
+		printf("initializationing error!\n");
+		WSACleanup();
+		exit(0);
+	}
+#endif
+
 	const char * config_file = "config";
 	if (argc > 1) {
 		config_file = argv[1];

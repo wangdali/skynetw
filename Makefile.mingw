@@ -2,10 +2,11 @@
 
 CC = i586-mingw32msvc-gcc
 CFLAGS = -g -Wall
-LDFLAGS = -lpthread lua52.dll
+LDFLAGS = -lpthread 3rd/lua/lua52.dll /usr/i586-mingw32msvc/lib/libws2_32.a
 SHARED = -shared
 
 all : \
+	net.dll \
 	skynet.dll \
 	skynet.exe \
 	master.so \
@@ -28,6 +29,12 @@ all : \
 #	bson.so \
 #	clientsocket.so \
 
+net.dll : \
+	skynet-src/socket_server.c
+	$(CC) $(CFLAGS) -c $^ -I./skynet-src $(LDFLAGS) -march=i686
+	$(CC) $(CFLAGS) $(SHARED) -o $@ *.o $(LDFLAGS)
+	rm *.o
+
 skynet.dll : \
 	skynet-src/dlfcn.c \
 	skynet-src/malloc_hook.c \
@@ -41,11 +48,10 @@ skynet.dll : \
 	skynet-src/skynet_server.c \
 	skynet-src/skynet_timer.c \
 	skynet-src/skynet_socket.c \
-	skynet-src/skynet_start.c \
-	skynet-src/socket_server.c
+	skynet-src/skynet_start.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src $(LDFLAGS) \
 	-DPTW32_STATIC_LIB -DNOUSE_JEMALLOC -march=i686
-	$(CC) $(CFLAGS) $(SHARED) -o $@ *.o $(LDFLAGS) libws2_32.a
+	$(CC) $(CFLAGS) $(SHARED) net.dll -o $@ *.o $(LDFLAGS)
 	rm *.o
 
 skynet.exe : \
@@ -53,9 +59,8 @@ skynet.exe : \
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src 
 	$(CC) $(CFLAGS) -o $@ \
 		skynet_main.o \
-		lua52.dll \
 		skynet.dll \
-		-I./skynet-src libws2_32.a
+		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
 master.so : \
@@ -105,7 +110,7 @@ skynet.so : \
 	lualib-src/lua-seri.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-skynet.o lua-seri.o skynet.dll lua52.dll \
+		lua-skynet.o lua-seri.o skynet.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -113,7 +118,7 @@ socketdriver.so : \
 	lualib-src/lua-socket.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-socket.o skynet.dll lua52.dll \
+		lua-socket.o skynet.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -121,7 +126,7 @@ netpack.so : \
 	lualib-src/lua-netpack.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-netpack.o lua52.dll \
+		lua-netpack.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -129,7 +134,7 @@ profile.so : \
 	lualib-src/lua-profile.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-profile.o lua52.dll \
+		lua-profile.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -137,7 +142,7 @@ memory.so : \
 	lualib-src/lua-memory.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-memory.o skynet.dll lua52.dll \
+		lua-memory.o skynet.dll \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -145,7 +150,7 @@ mongo.so : \
 	lualib-src/lua-mongo.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-mongo.o lua52.dll \
+		lua-mongo.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -153,7 +158,7 @@ bson.so : \
 	lualib-src/lua-bson.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-bson.o lua52.dll \
+		lua-bson.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -161,7 +166,7 @@ clientsocket.so : \
 	lualib-src/lua-clientsocket.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-clientsocket.o lua52.dll \
+		lua-clientsocket.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -169,7 +174,7 @@ multicast.so : \
 	lualib-src/lua-multicast.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src -march=i686
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		lua-multicast.o lua52.dll \
+		lua-multicast.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 #######################################################
@@ -178,7 +183,7 @@ int64.so : \
 	3rd/lua-int64/int64.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		int64.o lua52.dll \
+		int64.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -188,7 +193,7 @@ md5.so : \
 	3rd/lua-md5/compat-5.2.c
 	$(CC) $(CFLAGS) -c $^ -I./skynet-src
 	$(CC) $(CFLAGS) $(SHARED) -o luaclib/$@ \
-		md5.o md5lib.o compat-5.2.o lua52.dll \
+		md5.o md5lib.o compat-5.2.o \
 		-I./skynet-src $(LDFLAGS)
 	rm *.o
 
@@ -201,9 +206,8 @@ cjson.so : \
 		lua_cjson.o \
 		fpconv.o \
 		strbuf.o \
-		lua52.dll \
 		-I./skynet-src -I./3rd/lua-cjson $(LDFLAGS)
 	rm *.o
 
 clean :
-	rm *.o *.a cservice/*.so luaclib/*.so skynet.exe
+	rm *.dll *.exe *.o *.a cservice/*.so luaclib/*.so 
